@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>VerifiedAI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- PDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      padding: 30px;
+    }
+    .card {
+      background: #fff;
+      max-width: 650px;
+      margin: auto;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    h1 { margin-top: 0; }
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #2563eb;
+      color: #fff;
+      font-size: 14px;
+    }
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+    input[type="file"] {
+      margin-top: 10px;
+    }
+    .status {
+      margin-top: 15px;
+      color: #555;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      background: #f9fafb;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>VerifiedAI</h1>
+    <p>Verify before you agree.</p>
+
+    <button id="startBtn">Start a Verification</button>
+
+    <div id="output" class="status"></div>
+
+    <input type="file" id="evidenceFile" />
+    <br/><br/>
+    <button id="uploadBtn">Upload Evidence</button>
+
+    <div id="statusLine" class="status"></div>
+
+    <div id="resultBox" class="result"></div>
+    <br/>
+    <button id="pdfBtn" style="display:none;">Download Report (PDF)</button>
+  </div>
+
+<script>
+const API = "https://ebb700d3-0624-496c-8a99-8d7888669f68-00-2wqp9jjowl32z.picard.replit.dev";
+let currentJobId = null;
+let lastResult = null;
+
+function resultColor(verdict) {
+  if (verdict.includes("PARTIALLY")) return "orange";
+  if (verdict.includes("SUPPORTED")) return "green";
+  return "red";
+}
+
+document.getElementById("startBtn").onclick = async () => {
+  document.getElementById("statusLine").innerText = "Creating verification...";
+  const res = await fetch(`${API}/jobs`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ trade: "General" })
+  });
+
+  const data = await res.json();
+  currentJobId = data.id;
+
+  document.getElementById("output").innerHTML =
+    `<strong>Verification ID:</strong> ${data.id}<br/>Status: Waiting for evidence`;
+
+  document.getElementById("statusLine").innerText =
+    "Verification created. Awaiting evidence.";
+};
+
+document.getElementById("uploadBtn").onclick = async () => {
+  if (!currentJobId) {
+    alert("Start a verification first");
+    return;
+  }
+
+  const file = document.getElementById("evidenceFile").files[0];
+  if (!file) {
+    alert("Select a file");
+    return;
+  }
+
+  document.getElementById("statusLine").innerText =
+    "Uploading and locking evidence...";
+
+  const formData = new FormData();
+  formData.append("files", file);
+
+  await fetch(`${API}/evidence/${currentJobId}`, {
+    method: "POST",
+    body: formData
+  });
+
+  document.getElementById("statusLine").innerText =
+    "Evidence locked. Generating result...";
+
+  const res = await fetch(`${API}/results/${currentJobId}`);
+  const data = await res.json();
+  lastResult = data;
+
+  document.getElementById("resultBox").innerHTML = `
+    <h3 style="color:${resultColor(data.verdict)}">${data.verdict}</h3>
+    <strong>Confidence:</strong> ${data.confidence}<br/><br/>
+    <strong>Explanation:</strong><br/>
+    ${data.explanation}
+  `;
+
+  document.getElementById("statusLine").innerText =
+    "Verification complete.";
+
+  document.getElementById("startBtn").disabled = true;
+  document.getElementById("uploadBtn").disabled = true;
+  document.getElementById("pdfBtn").style.display = "inline-block";
+};
+
+document.getElementById("pdfBtn").onclick = () => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.setFontSize(16);
+  doc.text("VerifiedAI — Verification Report", 10, 15);
+
+  doc.setFontSize(11);
+  doc.text(`Verification ID: ${currentJobId}`, 10, 30);
+  doc.text(`Result: ${lastResult.verdict}`, 10, 40);
+  doc.text(`Confidence: ${lastResult.confidence}`, 10, 50);
+
+  doc.text("Explanation:", 10, 65);
+  doc.text(lastResult.explanation, 10, 75, { maxWidth: 180 });
+
+  doc.text(`Generated: ${new Date().toLocaleString()}`, 10, 120);
+
+  doc.save(`VerifiedAI_Report_${currentJobId}.pdf`);
+};
+</script>
+</body>
+</html>

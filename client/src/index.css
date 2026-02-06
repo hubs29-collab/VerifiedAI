@@ -1,0 +1,228 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500,600,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================
+   Clean minimal, premium:
+   - crisp typography
+   - soft neutrals + electric accent
+   - subtle grain + gradients
+   ========================================================= */
+
+:root {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
+    Segoe UI, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+
+  /* Light theme — cool porcelain */
+  --background: 210 20% 98%;
+  --foreground: 222 45% 12%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222 45% 12%;
+  --card-border: 215 28% 90%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 45% 12%;
+  --popover-border: 215 28% 90%;
+
+  --muted: 214 24% 95%;
+  --muted-foreground: 220 12% 43%;
+
+  --secondary: 210 30% 96%;
+  --secondary-foreground: 222 45% 12%;
+
+  /* Accent palette: ink + vivid cyan */
+  --primary: 200 92% 45%;
+  --primary-foreground: 210 40% 98%;
+  --accent: 38 92% 55%;
+  --accent-foreground: 20 35% 10%;
+
+  --destructive: 0 84% 54%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 215 25% 88%;
+  --input: 215 25% 84%;
+  --ring: 200 92% 45%;
+
+  /* Data viz */
+  --chart-1: 200 92% 45%;
+  --chart-2: 38 92% 55%;
+  --chart-3: 262 80% 58%;
+  --chart-4: 150 55% 42%;
+  --chart-5: 0 84% 54%;
+
+  --radius: 0.85rem;
+
+  /* Shadows tuned for "paper" */
+  --shadow-2xs: 0 1px 0 hsl(222 45% 12% / 0.02);
+  --shadow-xs: 0 1px 2px hsl(222 45% 12% / 0.06);
+  --shadow-sm: 0 1px 2px hsl(222 45% 12% / 0.06),
+    0 6px 18px hsl(222 45% 12% / 0.06);
+  --shadow-md: 0 2px 4px hsl(222 45% 12% / 0.07),
+    0 14px 34px hsl(222 45% 12% / 0.08);
+  --shadow-lg: 0 6px 16px hsl(222 45% 12% / 0.09),
+    0 26px 60px hsl(222 45% 12% / 0.12);
+
+  --grain-opacity: 0.06;
+}
+
+.dark {
+  /* Dark theme — deep slate, neon accent */
+  --background: 222 45% 7%;
+  --foreground: 210 40% 98%;
+
+  --card: 222 40% 10%;
+  --card-foreground: 210 40% 98%;
+  --card-border: 220 22% 18%;
+
+  --popover: 222 40% 10%;
+  --popover-foreground: 210 40% 98%;
+  --popover-border: 220 22% 18%;
+
+  --muted: 222 28% 14%;
+  --muted-foreground: 215 20% 70%;
+
+  --secondary: 222 30% 12%;
+  --secondary-foreground: 210 40% 98%;
+
+  --primary: 200 96% 55%;
+  --primary-foreground: 222 45% 7%;
+
+  --accent: 38 95% 60%;
+  --accent-foreground: 222 45% 7%;
+
+  --destructive: 0 82% 58%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 220 22% 18%;
+  --input: 220 22% 22%;
+  --ring: 200 96% 55%;
+
+  --grain-opacity: 0.05;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    @apply tracking-tight;
+  }
+}
+
+/* Subtle background treatment: gradient mesh + grain overlay */
+@layer utilities {
+  .app-surface {
+    background:
+      radial-gradient(
+          1200px 600px at 10% -10%,
+          hsl(var(--primary) / 0.12),
+          transparent 60%
+        ),
+      radial-gradient(
+          900px 420px at 95% 5%,
+          hsl(var(--accent) / 0.10),
+          transparent 55%
+        ),
+      radial-gradient(
+          900px 520px at 20% 110%,
+          hsl(262 80% 58% / 0.08),
+          transparent 55%
+        ),
+      linear-gradient(
+        180deg,
+        hsl(var(--background)) 0%,
+        hsl(var(--background)) 55%,
+        hsl(var(--background) / 0.9) 100%
+      );
+    position: relative;
+    isolation: isolate;
+  }
+
+  .app-surface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E");
+    mix-blend-mode: soft-light;
+  }
+
+  .shadow-paper {
+    box-shadow: var(--shadow-md);
+  }
+
+  .shadow-paper-sm {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ring-premium {
+    @apply focus:outline-none focus:ring-4;
+    --tw-ring-color: hsl(var(--primary) / 0.18);
+    --tw-ring-offset-color: hsl(var(--background));
+  }
+
+  .glass {
+    background: linear-gradient(
+      180deg,
+      hsl(var(--card) / 0.8),
+      hsl(var(--card) / 0.64)
+    );
+    backdrop-filter: blur(10px);
+    border: 1px solid hsl(var(--border) / 0.7);
+  }
+
+  .anim-fade-up {
+    animation: fadeUp 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .anim-fade-up-2 {
+    animation: fadeUp 700ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
+  }
+
+  .anim-fade-up-3 {
+    animation: fadeUp 760ms cubic-bezier(0.16, 1, 0.3, 1) 140ms both;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+      filter: blur(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0px);
+    }
+  }
+
+  /* Improve selection look */
+  ::selection {
+    background: hsl(var(--primary) / 0.25);
+  }
+}
